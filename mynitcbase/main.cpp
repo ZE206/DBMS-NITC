@@ -13,20 +13,27 @@ int main(int argc, char *argv[]) {
   // OpenRelTable cache;
 
   unsigned char buffer[BLOCK_SIZE];
-  Disk::readBlock(buffer, 7000);
+  Disk::readBlock(buffer,7000);
 
-  char message[] = "hello";
+  char message[] = "hello" ;
   memcpy(buffer + 20, message, 6);
-  Disk::writeBlock(buffer, 7000);
+  Disk::writeBlock(buffer,7000);
 
   unsigned char buffer2[BLOCK_SIZE];
-  char message2[6];
+  char message2[6] ;
 
-  Disk::readBlock(buffer2, 7000);
-  memcpy(message2, buffer2 + 20, 6);
-  cout << message2 << "\n";
+  Disk::readBlock(buffer2,7000);
+  memcpy(message2,buffer2 + 20,6);
 
+  cout << message2 << "\n" ;  
+
+  unsigned char showBufferContent[BLOCK_SIZE] ;
+  Disk::readBlock(showBufferContent,0);
+
+  for(int i=0;i<BLOCK_SIZE;i++) {
+    cout << (int)showBufferContent[i] << " " ;
+  }
 
   return 0;
-  //return FrontendInterface::handleFrontend(argc, argv);
+  return FrontendInterface::handleFrontend(argc, argv);
 }
