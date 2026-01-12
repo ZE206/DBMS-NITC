@@ -12,28 +12,65 @@ int main(int argc, char *argv[]) {
   // StaticBuffer buffer;
   // OpenRelTable cache;
 
-  unsigned char buffer[BLOCK_SIZE];
-  Disk::readBlock(buffer,7000);
+  // create objects for the relation catalog and attribute catalog
+  RecBuffer relCatBuffer(RELCAT_BLOCK);
+  RecBuffer attrCatBuffer(ATTRCAT_BLOCK);
 
-  char message[] = "hello" ;
-  memcpy(buffer + 20, message, 6);
-  Disk::writeBlock(buffer,7000);
+  HeadInfo relCatHeader ;
+  HeadInfo attrCatHeader ;
 
-  unsigned char buffer2[BLOCK_SIZE];
-  char message2[6] ;
+  relCatBuffer.getHeader(&relCatHeader) ;
+  attrCatBuffer.getHeader(&attrCatHeader) ;
 
-  Disk::readBlock(buffer2,7000);
-  memcpy(message2,buffer2 + 20,6);
+  //cout << relCatHeader.numEntries << endl ;
 
-  cout << message2 << "\n" ;  
+  for(int i = 0; i < relCatHeader.numEntries; i++) {
 
-  unsigned char showBufferContent[BLOCK_SIZE] ;
-  Disk::readBlock(showBufferContent,0);
+    Attribute relCatRecord[RELCAT_NO_ATTRS] ;
+    relCatBuffer.getRecord(relCatRecord,i);
 
-  for(int i=0;i<BLOCK_SIZE;i++) {
-    cout << (int)showBufferContent[i] << " " ;
+    printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
+
+    for(int j = 0; j < attrCatHeader.numEntries; j++) {
+
+      Attribute attrCatRecord[ATTRCAT_NO_ATTRS] ;
+      attrCatBuffer.getRecord(attrCatRecord,j);
+
+      if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal ,attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0) {
+        const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR" ;
+
+        printf("  %s: %s\n",attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attrType);
+      }
+    }
+    printf("\n");
   }
 
-  return 0;
-  return FrontendInterface::handleFrontend(argc, argv);
+  return 0 ;
+
+  // unsigned char buffer[BLOCK_SIZE];
+  // Disk::readBlock(buffer,7000);
+
+  // char message[] = "hello" ;
+  // memcpy(buffer + 20, message, 6);
+  // Disk::writeBlock(buffer,7000);
+
+  // unsigned char buffer2[BLOCK_SIZE];
+  // char message2[6] ;
+
+  // Disk::readBlock(buffer2,7000);
+  // memcpy(message2,buffer2 + 20,6);
+
+  // cout << message2 << "\n" ;  
+
+  // unsigned char showBufferContent[BLOCK_SIZE] ;
+  // Disk::readBlock(showBufferContent,4);
+
+  // for(int i=0;i<BLOCK_SIZE;i++) {
+  //   cout << (int)showBufferContent[i] << " " ;
+  // }
+
+  // //BMAP = 4, RECORD_BLOCK = 0, UNUSED_BLOCK = 3
+
+  // return 0;
+  // return FrontendInterface::handleFrontend(argc, argv);
 }
