@@ -14,13 +14,10 @@ int main(int argc, char *argv[]) {
 
   // create objects for the relation catalog and attribute catalog
   RecBuffer relCatBuffer(RELCAT_BLOCK);
-  RecBuffer attrCatBuffer(ATTRCAT_BLOCK);
 
   HeadInfo relCatHeader ;
-  HeadInfo attrCatHeader ;
 
   relCatBuffer.getHeader(&relCatHeader) ;
-  attrCatBuffer.getHeader(&attrCatHeader) ;
 
   //cout << relCatHeader.numEntries << endl ;
 
@@ -31,18 +28,36 @@ int main(int argc, char *argv[]) {
 
     printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
 
-    for(int j = 0; j < attrCatHeader.numEntries; j++) {
+    int currBlock = ATTRCAT_BLOCK ;
 
-      Attribute attrCatRecord[ATTRCAT_NO_ATTRS] ;
-      attrCatBuffer.getRecord(attrCatRecord,j);
+    while(currBlock != -1) {
 
-      if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal ,attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0) {
-        const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR" ;
+      RecBuffer attrCatBuffer(currBlock);
+      HeadInfo attrCatHeader ;
 
-        printf("  %s: %s\n",attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attrType);
+      attrCatBuffer.getHeader(&attrCatHeader) ;
+      
+      for(int j=0; j < attrCatHeader.numEntries; j++) {
+
+        Attribute attrCatRecord[ATTRCAT_NO_ATTRS] ;
+        attrCatBuffer.getRecord(attrCatRecord,j);
+
+        if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal ,attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0) {
+          const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR" ;
+          if(strcmp(attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal, "Students") == 0 &&
+             strcmp(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, "Class") == 0) {
+            const char * s = "Batch" ;
+            
+            strcpy(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,s);
+          }
+
+          printf("  %s: %s\n",attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attrType);
+        }
       }
+      printf("\n");
+      currBlock = attrCatHeader.rblock ;
     }
-    printf("\n");
+    
   }
 
   return 0 ;
