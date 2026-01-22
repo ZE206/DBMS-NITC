@@ -7,60 +7,78 @@
 using namespace std ;
 
 int main(int argc, char *argv[]) {
-  /* Initialize the Run Copy of Disk */
-  Disk disk_run;
-  // StaticBuffer buffer;
-  // OpenRelTable cache;
+    /* Initialize the Run Copy of Disk */
+    Disk disk_run;
+    StaticBuffer buffer;
+    OpenRelTable cache;
 
-  // create objects for the relation catalog and attribute catalog
-  RecBuffer relCatBuffer(RELCAT_BLOCK);
+    for(int i = 0; i <= 1; i++) {
+        RelCatEntry relCatEntry ;
 
-  HeadInfo relCatHeader ;
+        RelCacheTable::getRelCatEntry(i,&relCatEntry);
+        printf("Relation : %s\n",relCatEntry.relName);
 
-  relCatBuffer.getHeader(&relCatHeader) ;
+        for(int j = 0; j < relCatEntry.numAttrs; j++) {
+            AttrCatEntry attrCatEntry ;
 
-  //cout << relCatHeader.numEntries << endl ;
+            AttrCacheTable::getAttrCatEntry(i,j,&attrCatEntry);
+            const char * attrType = (attrCatEntry.attrType == NUMBER) ? "NUM" : "STR" ;
 
-  for(int i = 0; i < relCatHeader.numEntries; i++) {
-
-    Attribute relCatRecord[RELCAT_NO_ATTRS] ;
-    relCatBuffer.getRecord(relCatRecord,i);
-
-    printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
-
-    int currBlock = ATTRCAT_BLOCK ;
-
-    while(currBlock != -1) {
-
-      RecBuffer attrCatBuffer(currBlock);
-      HeadInfo attrCatHeader ;
-
-      attrCatBuffer.getHeader(&attrCatHeader) ;
-      
-      for(int j=0; j < attrCatHeader.numEntries; j++) {
-
-        Attribute attrCatRecord[ATTRCAT_NO_ATTRS] ;
-        attrCatBuffer.getRecord(attrCatRecord,j);
-
-        if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal ,attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0) {
-          const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR" ;
-          if(strcmp(attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal, "Students") == 0 &&
-             strcmp(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, "Class") == 0) {
-            const char * s = "Batch" ;
-            
-            strcpy(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,s);
-          }
-
-          printf("  %s: %s\n",attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attrType);
+            printf("  %s: %s\n", attrCatEntry.attrName,attrType ) ;
         }
-      }
-      printf("\n");
-      currBlock = attrCatHeader.rblock ;
     }
-    
-  }
 
-  return 0 ;
+    return 0 ;
+
+    // create objects for the relation catalog and attribute catalog
+    RecBuffer relCatBuffer(RELCAT_BLOCK);
+
+    HeadInfo relCatHeader ;
+
+    relCatBuffer.getHeader(&relCatHeader) ;
+
+    //cout << relCatHeader.numEntries << endl ;
+
+    for(int i = 0; i < relCatHeader.numEntries; i++) {
+
+        Attribute relCatRecord[RELCAT_NO_ATTRS] ;
+        relCatBuffer.getRecord(relCatRecord,i);
+
+        printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
+
+        int currBlock = ATTRCAT_BLOCK ;
+
+        while(currBlock != -1) {
+
+            RecBuffer attrCatBuffer(currBlock);
+            HeadInfo attrCatHeader ;
+
+            attrCatBuffer.getHeader(&attrCatHeader) ;
+            
+            for(int j=0; j < attrCatHeader.numEntries; j++) {
+
+            Attribute attrCatRecord[ATTRCAT_NO_ATTRS] ;
+            attrCatBuffer.getRecord(attrCatRecord,j);
+
+            if(strcmp(relCatRecord[RELCAT_REL_NAME_INDEX].sVal ,attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal) == 0) {
+                const char *attrType = attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM" : "STR" ;
+                if(strcmp(attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal, "Students") == 0 &&
+                strcmp(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, "Class") == 0) {
+                const char * s = "Batch" ;
+                
+                strcpy(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,s);
+                }
+
+                printf("  %s: %s\n",attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,attrType);
+            }
+        }
+        printf("\n");
+        currBlock = attrCatHeader.rblock ;
+      }
+      
+    }
+
+    return 0 ;
 
   // unsigned char buffer[BLOCK_SIZE];
   // Disk::readBlock(buffer,7000);
