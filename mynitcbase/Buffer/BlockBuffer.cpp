@@ -66,9 +66,12 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum) {
     int attrCount = head.numAttrs;
     int slotCount = head.numSlots;
 
+    if (slotNum < 0 || slotNum >= head.numSlots) {
+        return -1 ;
+    }
+
     // read the block at this.blockNum into a buffer
-    unsigned char buffer[BLOCK_SIZE] ;
-    unsigned char * bufferPtr ;
+    unsigned char * bufferPtr = nullptr ;
     int ret = loadBlockAndGetBufferPtr(&bufferPtr);
 
     if(ret != SUCCESS) {
@@ -87,4 +90,46 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum) {
     memcpy(rec, slotPointer, recordSize);
 
     return SUCCESS;
+}
+
+int RecBuffer::getSlotMap(unsigned char * slotMap) {
+    unsigned char * bufferPtr ;
+
+    int ret = loadBlockAndGetBufferPtr(&bufferPtr) ;
+
+    if(ret != SUCCESS) {
+        return ret ;
+    }
+
+    struct HeadInfo head ;
+    BlockBuffer::getHeader(&head);
+
+    int slotCount = head.numSlots ;
+
+    unsigned char * slotMapInBuffer = bufferPtr + HEADER_SIZE ;
+
+    for(int i = 0; i < slotCount; i++) {
+        slotMap[i] = slotMapInBuffer[i] ;
+    }
+
+    return SUCCESS ;
+}
+
+int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType) {
+
+    double diff;
+
+    if(attrType == STRING) {
+        diff = strcmp(attr1.sVal,attr2.sVal);
+    } else {
+        diff = attr1.nVal - attr2.nVal ;
+    }
+
+    if(diff > 0)  {
+        return 1 ;
+    } else if( diff < 0) {
+        return -1 ;
+    } else {
+        return 0 ;
+    }
 }

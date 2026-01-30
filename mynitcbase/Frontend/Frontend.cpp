@@ -52,6 +52,7 @@ int Frontend::insert_into_table_values(char relname[ATTR_SIZE], int attr_count, 
 
 int Frontend::select_from_table(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE]) {
   // Algebra::project
+  
   return SUCCESS;
 }
 
@@ -63,8 +64,7 @@ int Frontend::select_attrlist_from_table(char relname_source[ATTR_SIZE], char re
 
 int Frontend::select_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
                                       char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
-  // Algebra::select
-  return SUCCESS;
+  return Algebra::select(relname_source, relname_target, attribute, op, value);
 }
 
 int Frontend::select_attrlist_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],

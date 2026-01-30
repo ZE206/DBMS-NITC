@@ -12,6 +12,8 @@ int main(int argc, char *argv[]) {
     StaticBuffer buffer;
     OpenRelTable cache;
 
+    FrontendInterface::handleFrontend( argc, argv);
+
     for(int i = 0; i <= 2; i++) {
         RelCatEntry relCatEntry ;
 

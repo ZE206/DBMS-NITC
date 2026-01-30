@@ -12,10 +12,10 @@ int AttrCacheTable::getAttrCatEntry(int relId, int attrOffset, AttrCatEntry* att
         return E_OUTOFBOUND ;
     }
 
+    // check if attrCache[relId] == nullptr and return E_RELNOTOPEN if true
     if(attrCache[relId] == nullptr) {
         return E_RELNOTOPEN ;
     }
-    // check if attrCache[relId] == nullptr and return E_RELNOTOPEN if true
 
     // traverse the linked list of attribute cache entries
     for (AttrCacheEntry* entry = attrCache[relId]; entry != nullptr; entry = entry->next) {
@@ -25,9 +25,27 @@ int AttrCacheTable::getAttrCatEntry(int relId, int attrOffset, AttrCatEntry* att
         // copy entry->attrCatEntry to *attrCatBuf and return SUCCESS;
         }
     }
-
     // there is no attribute at this offset
     return E_ATTRNOTEXIST;
+}
+
+int AttrCacheTable::getAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry * attrCatBuff) {
+    if(relId < 0 || relId >= MAX_OPEN) {
+        return E_OUTOFBOUND ;
+    }
+
+    if(attrCache[relId] == nullptr) {
+        return E_RELNOTOPEN ;
+    }
+
+    for(AttrCacheEntry* entry = attrCache[relId]; entry != nullptr; entry = entry->next) {
+        if( strcmp(entry->attrCatEntry.attrName, attrName) == 0) {
+            *attrCatBuff = entry->attrCatEntry ;
+            return SUCCESS ;
+        }
+    }
+
+    return E_ATTRNOTEXIST ;
 }
 
 /* Converts a attribute catalog record to AttrCatEntry struct
