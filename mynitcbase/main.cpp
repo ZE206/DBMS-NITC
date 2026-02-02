@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
     FrontendInterface::handleFrontend( argc, argv);
 
-    for(int i = 0; i <= 2; i++) {
+    for(int i = 0; i <= 1; i++) {
         RelCatEntry relCatEntry ;
 
         RelCacheTable::getRelCatEntry(i,&relCatEntry);
