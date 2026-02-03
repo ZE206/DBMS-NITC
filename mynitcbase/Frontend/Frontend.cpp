@@ -29,8 +29,7 @@ int Frontend::alter_table_rename(char relname_from[ATTR_SIZE], char relname_to[A
   return SUCCESS;
 }
 
-int Frontend::alter_table_rename_column(char relname[ATTR_SIZE], char attrname_from[ATTR_SIZE],
-                                        char attrname_to[ATTR_SIZE]) {
+int Frontend::alter_table_rename_column(char relname[ATTR_SIZE], char attrname_from[ATTR_SIZE],char attrname_to[ATTR_SIZE]) {
   // Schema::renameAttr
   return SUCCESS;
 }
@@ -55,21 +54,17 @@ int Frontend::select_from_table(char relname_source[ATTR_SIZE], char relname_tar
   return SUCCESS;
 }
 
-int Frontend::select_attrlist_from_table(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
-                                         int attr_count, char attr_list[][ATTR_SIZE]) {
+int Frontend::select_attrlist_from_table(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],int attr_count, char attr_list[][ATTR_SIZE]) {
   // Algebra::project
   return SUCCESS;
 }
 
-int Frontend::select_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
-                                      char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
+int Frontend::select_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
   // Algebra::select
-  return Algebra::select(relname_source, relname_target, attribute, op value);
-  
+  return Algebra::select(relname_source, relname_target, attribute, op,value);
+}
 
-int Frontend::select_attrlist_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],
-                                               int attr_count, char attr_list[][ATTR_SIZE],
-                                               char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
+int Frontend::select_attrlist_from_table_where(char relname_source[ATTR_SIZE], char relname_target[ATTR_SIZE],int attr_count, char attr_list[][ATTR_SIZE],char attribute[ATTR_SIZE], int op, char value[ATTR_SIZE]) {
   // Algebra::select + Algebra::project??
   return SUCCESS;
 }

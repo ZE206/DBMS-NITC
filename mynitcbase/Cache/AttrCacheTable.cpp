@@ -36,12 +36,12 @@ void AttrCacheTable::recordToAttrCatEntry(union Attribute record[ATTRCAT_NO_ATTR
                                         
 }
 
-int AttrCacheTable::getAttrCacheEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry* attrCatBuf){
+int AttrCacheTable::getAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry* attrCatBuf){
     if(relId<0 || relId>MAX_OPEN){
         return E_OUTOFBOUND;
     }
 
-    for(AttrCacheEntry* entry=attrCache[relId]; entry!=nullptr;enty =entry->next){
+    for(AttrCacheEntry* entry=attrCache[relId]; entry!=nullptr;entry =entry->next){
         if(strcmp(entry->attrCatEntry.attrName,attrName)==0){
             *attrCatBuf=entry->attrCatEntry;
             return SUCCESS;

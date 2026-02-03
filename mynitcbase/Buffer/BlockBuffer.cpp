@@ -118,23 +118,28 @@ int RecBuffer::getSlotMap(unsigned char *slotMap){
 
     unsigned char * slotMapInBuffer=bufferPtr+HEADER_SIZE;
 
-    strcpy(*slotMap, *slotMapInBuffer);
+    for(int i = 0; i < slotCount; i++) {
+        slotMap[i] = slotMapInBuffer[i] ;
+    }
 
     return SUCCESS;
 
 }
-
-int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType){
+int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType) {
 
     double diff;
-    if(attrType==STRING){
-        diff=strcmp(attr1.sval, attr2.sval);
-    } else{
-        diff=attr1.nval-attr2.nval;
+
+    if(attrType == STRING) {
+        diff = strcmp(attr1.sVal,attr2.sVal);
+    } else {
+        diff = attr1.nVal - attr2.nVal ;
     }
 
-    if(diff>0) return 1;
-    if(diff<0) return -1;
-    if(diff==0) return 0;
+    if(diff > 0)  {
+        return 1 ;
+    } else if( diff < 0) {
+        return -1 ;
+    } else {
+        return 0 ;
+    }
 }
-
