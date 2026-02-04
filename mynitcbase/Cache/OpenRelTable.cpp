@@ -136,15 +136,6 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
         }
     }
     return E_RELNOTOPEN;
-
-
-    for(int relId = 0; relId < MAX_OPEN; relId++) {
-        if(tableMetaInfo[relId].free == false && strcmp(tableMetaInfo[relId].relName, relName) == 0) {
-            return relId ;
-        }
-    }
-    
-    return E_RELNOTOPEN ;
 }
 
 int OpenRelTable::getFreeOpenRelTableEntry() {
