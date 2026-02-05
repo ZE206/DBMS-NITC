@@ -14,21 +14,21 @@ int main(int argc, char *argv[]) {
 
     FrontendInterface::handleFrontend( argc, argv);
 
-    // for(int i = 0; i <= 1; i++) {
-    //     RelCatEntry relCatEntry ;
+    for(int i = 0; i <= 1; i++) {
+        RelCatEntry relCatEntry ;
 
-    //     RelCacheTable::getRelCatEntry(i,&relCatEntry);
-    //     printf("Relation : %s\n",relCatEntry.relName);
+        RelCacheTable::getRelCatEntry(i,&relCatEntry);
+        printf("Relation : %s\n",relCatEntry.relName);
 
-    //     for(int j = 0; j < relCatEntry.numAttrs; j++) {
-    //         AttrCatEntry attrCatEntry ;
+        for(int j = 0; j < relCatEntry.numAttrs; j++) {
+            AttrCatEntry attrCatEntry ;
 
-    //         AttrCacheTable::getAttrCatEntry(i,j,&attrCatEntry);
-    //         const char * attrType = (attrCatEntry.attrType == NUMBER) ? "NUM" : "STR" ;
+            AttrCacheTable::getAttrCatEntry(i,j,&attrCatEntry);
+            const char * attrType = (attrCatEntry.attrType == NUMBER) ? "NUM" : "STR" ;
 
-    //         printf("  %s: %s\n", attrCatEntry.attrName,attrType ) ;
-    //     }
-    // }
+            printf("  %s: %s\n", attrCatEntry.attrName,attrType ) ;
+        }
+    }
 
     return 0 ;
 
