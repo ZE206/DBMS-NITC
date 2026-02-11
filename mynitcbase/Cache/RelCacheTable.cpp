@@ -89,11 +89,9 @@ int RelCacheTable::setRelCatEntry(int relId, RelCatEntry *relCatBuf) {
         return E_RELNOTOPEN ;
     }
 
-    // relCache[relId]->relCatEntry.firstBlk = relCatBuf->firstBlk ;
-    // relCache[relId]->relCatEntry.lastBlk = relCatBuf->lastBlk ;
+    // memcpy(&(RelCacheTable::relCache[relId]->relCatEntry), relCatBuf, sizeof(RelCatEntry));
 
-    memcpy(&(RelCacheTable::relCache[relId]->relCatEntry), relCatBuf, sizeof(RelCatEntry));
-
+    relCache[relId]->relCatEntry = * relCatBuf ;
     RelCacheTable::relCache[relId]->dirty = true ;
 
     return SUCCESS ;

@@ -19,7 +19,7 @@ BlockBuffer::BlockBuffer(char blockType) {
         type = IND_LEAF ;
     }
 
-    int ret = BlockBuffer::getFreeBlock(type);
+    int ret = this->getFreeBlock(type);
 
     this->blockNum = ret ; 
 }
@@ -35,9 +35,12 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
 
     if(bufferNum != E_BLOCKNOTINBUFFER) {
         for(int i = 0; i < BUFFER_CAPACITY; i++) {
-            StaticBuffer::metainfo[i].timeStamp++;
+            if(i == bufferNum) {
+                StaticBuffer::metainfo[i].timeStamp = 0;
+            } else {
+                StaticBuffer::metainfo[bufferNum].timeStamp += 1;
+            }
         }
-        StaticBuffer::metainfo[bufferNum].timeStamp = 0;
     } else  {
         bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
 
@@ -46,8 +49,8 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
         }
         Disk::readBlock(StaticBuffer::blocks[bufferNum], this->blockNum);
     }
-    *buffPtr = StaticBuffer::blocks[bufferNum] ;
 
+    *buffPtr = StaticBuffer::blocks[bufferNum] ;
     return SUCCESS ;
 }
 
@@ -240,17 +243,15 @@ int BlockBuffer::setBlockType(int blockType) {
     unsigned char *bufferPtr ;
     
     int ret = BlockBuffer::loadBlockAndGetBufferPtr(&bufferPtr);
-
     if(ret != SUCCESS) {
         return ret ;
     }
 
-    *((int32_t*)bufferPtr) = blockType ;
+    *(int32_t*)bufferPtr = blockType ;
 
     StaticBuffer::blockAllocMap[this->blockNum] = blockType ;
 
     ret = StaticBuffer::setDirtyBit(this->blockNum);
-
     if(ret != SUCCESS) {
         return ret ;
     }
@@ -284,9 +285,9 @@ int BlockBuffer::getFreeBlock(int blockType) {
     head.numEntries = 0 ;
     head.numAttrs = 0 ;
     head.numSlots = 0;
-    BlockBuffer::setHeader(&head);
-
-    BlockBuffer::setBlockType(blockType);  
+    
+    this->setHeader(&head);
+    this->setBlockType(blockType);
 
     return freeBlock ;
 }

@@ -26,11 +26,6 @@ StaticBuffer::StaticBuffer() {
     }
 }
 
-/*
-At this stage, we are not writing back from the buffer to the disk since we are
-not modifying the buffer. So, we will define an empty destructor for now. In
-subsequent stages, we will implement the write-back functionality here.
-*/
 StaticBuffer::~StaticBuffer() {
     for(int i = 0, index = 0; i < 4; i++) {
         unsigned char buffer[BLOCK_SIZE];
@@ -46,7 +41,6 @@ StaticBuffer::~StaticBuffer() {
         }
     }
 }
-
 
 int StaticBuffer::getFreeBuffer(int blockNum) {
     if (blockNum < 0 || blockNum > DISK_BLOCKS) {

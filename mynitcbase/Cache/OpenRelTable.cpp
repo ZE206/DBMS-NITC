@@ -234,7 +234,10 @@ int OpenRelTable::closeRel(int relId) {
         Attribute record[RELCAT_NO_ATTRS] ;
         RelCacheTable::relCatEntryToRecord(&(RelCacheTable::relCache[relId]->relCatEntry),record);
 
-        RecId recId = RelCacheTable::relCache[relId]->recId ;
+        Attribute attrVal ;
+        strcpy(attrVal.sVal,record[RELCAT_REL_NAME_INDEX].sVal);
+        RelCacheTable::resetSearchIndex(RELCAT_RELID);
+        RecId recId = BlockAccess::linearSearch(RELCAT_RELID,(char*)RELCAT_ATTR_RELNAME, attrVal, EQ);
         RecBuffer relCatBlock(recId.block);
 
         relCatBlock.setRecord(record,recId.slot);
