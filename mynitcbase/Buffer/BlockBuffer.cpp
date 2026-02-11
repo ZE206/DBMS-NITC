@@ -172,14 +172,12 @@ int RecBuffer::setSlotMap(unsigned char *slotMap) {
     unsigned char * bufferPtr ;
 
     int ret = BlockBuffer::loadBlockAndGetBufferPtr(&bufferPtr);
-
     if(ret != SUCCESS) {
         return ret ;
     }
 
     HeadInfo head ;
-    RecBuffer::getHeader(&head);
-
+    this->getHeader(&head);
     int numSlots = head.numSlots ;
 
     memcpy(bufferPtr + HEADER_SIZE, slotMap, numSlots);

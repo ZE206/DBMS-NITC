@@ -105,11 +105,11 @@ int Algebra::insert(char relName[ATTR_SIZE], int nAttrs, char record[][ATTR_SIZE
     Attribute recordValues[nAttrs];
 
     for( int i = 0; i < nAttrs ; i++) {
-        AttrCatEntry* attrCatEntry = (AttrCatEntry*)malloc(sizeof(AttrCatEntry));
+        AttrCatEntry attrCatEntry ;
 
-        AttrCacheTable::getAttrCatEntry(relId,i,attrCatEntry);
+        AttrCacheTable::getAttrCatEntry(relId,i,&attrCatEntry);
 
-        int type = attrCatEntry->attrType ;
+        int type = attrCatEntry.attrType ;
 
         if(type == NUMBER) {
             if(isNumber(record[i])) {
