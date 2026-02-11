@@ -98,13 +98,11 @@ OpenRelTable::OpenRelTable() {
         prev = nullptr;
    }
 
-
     tableMetaInfo[RELCAT_RELID].free = false ;
     tableMetaInfo[ATTRCAT_RELID].free = false ;
 
     strcpy(tableMetaInfo[RELCAT_RELID].relName,"RELATIONCAT") ;
     strcpy(tableMetaInfo[ATTRCAT_RELID].relName,"ATTRIBUTECAT") ;
-
 }
 
 OpenRelTable::~OpenRelTable() {
@@ -229,6 +227,17 @@ int OpenRelTable::closeRel(int relId) {
 
     if(tableMetaInfo[relId].free == true) {
         return E_RELNOTOPEN;
+    }
+
+
+    if(RelCacheTable::relCache[relId]->dirty) {
+        Attribute record[RELCAT_NO_ATTRS] ;
+        RelCacheTable::relCatEntryToRecord(&(RelCacheTable::relCache[relId]->relCatEntry),record);
+
+        RecId recId = RelCacheTable::relCache[relId]->recId ;
+        RecBuffer relCatBlock(recId.block);
+
+        relCatBlock.setRecord(record,recId.slot);
     }
 
     if(RelCacheTable::relCache[relId]) {

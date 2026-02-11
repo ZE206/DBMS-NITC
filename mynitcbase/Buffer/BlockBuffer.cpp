@@ -8,8 +8,26 @@ BlockBuffer::BlockBuffer(int blockNum) {
     this->blockNum = blockNum ;
 }
 
+BlockBuffer::BlockBuffer(char blockType) {
+    int type; 
+
+    if(blockType == 'R') {
+        type = REC ;
+    } else if(blockType == 'I') {
+        type = IND_INTERNAL ;
+    } else {
+        type = IND_LEAF ;
+    }
+
+    int ret = BlockBuffer::getFreeBlock(type);
+
+    this->blockNum = ret ; 
+}
+
 //Constructor Initializer
 RecBuffer::RecBuffer(int blockNum) : BlockBuffer::BlockBuffer(blockNum) {}
+
+RecBuffer::RecBuffer() : BlockBuffer('R') {}
 
 
 int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
@@ -147,6 +165,30 @@ int RecBuffer::getSlotMap(unsigned char * slotMap) {
     return SUCCESS ;
 }
 
+int RecBuffer::setSlotMap(unsigned char *slotMap) {
+    unsigned char * bufferPtr ;
+
+    int ret = BlockBuffer::loadBlockAndGetBufferPtr(&bufferPtr);
+
+    if(ret != SUCCESS) {
+        return ret ;
+    }
+
+    HeadInfo head ;
+    RecBuffer::getHeader(&head);
+
+    int numSlots = head.numSlots ;
+
+    memcpy(bufferPtr + HEADER_SIZE, slotMap, numSlots);
+
+    ret = StaticBuffer::setDirtyBit(this->blockNum);
+
+    if(ret != SUCCESS) {
+        return ret ;
+    }
+    return SUCCESS ;
+}
+
 int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType) {
 
     double diff;
@@ -164,4 +206,91 @@ int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType) {
     } else {
         return 0 ;
     }
+}
+
+int BlockBuffer::setHeader(struct HeadInfo *head) {
+    unsigned char *bufferPtr ;
+
+    int retVal = BlockBuffer::loadBlockAndGetBufferPtr(&bufferPtr);
+
+    if(retVal != SUCCESS) {
+        return retVal ;
+    }
+
+    struct HeadInfo * bufferHeader = (struct HeadInfo *)bufferPtr ;
+
+    bufferHeader->blockType = head->blockType ;
+    bufferHeader->lblock = head->lblock ;
+    bufferHeader->numAttrs = head->numAttrs ;
+    bufferHeader->numEntries = head->numEntries ;
+    bufferHeader->numSlots = head->numSlots ;
+    bufferHeader->pblock = head->pblock ;
+    bufferHeader->rblock = head->rblock ;
+
+    int ret = StaticBuffer::setDirtyBit(this->blockNum);
+
+    if(ret != SUCCESS) {
+        return ret ;
+    }
+
+    return SUCCESS ;
+}
+
+int BlockBuffer::setBlockType(int blockType) {
+    unsigned char *bufferPtr ;
+    
+    int ret = BlockBuffer::loadBlockAndGetBufferPtr(&bufferPtr);
+
+    if(ret != SUCCESS) {
+        return ret ;
+    }
+
+    *((int32_t*)bufferPtr) = blockType ;
+
+    StaticBuffer::blockAllocMap[this->blockNum] = blockType ;
+
+    ret = StaticBuffer::setDirtyBit(this->blockNum);
+
+    if(ret != SUCCESS) {
+        return ret ;
+    }
+
+    return SUCCESS ;
+}
+
+int BlockBuffer::getFreeBlock(int blockType) {
+
+    int freeBlock = -1 ;
+    for(int i=0; i < DISK_BLOCKS ; i++) {
+        if(StaticBuffer::blockAllocMap[i] == UNUSED_BLK) {
+            freeBlock = i;
+            break ;
+        }
+    }
+
+    if(freeBlock == -1) return E_DISKFULL ;
+
+    this->blockNum = freeBlock ;
+
+    int bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
+    if(bufferNum == E_OUTOFBOUND) {
+        return E_OUTOFBOUND ;
+    }
+
+    HeadInfo head ;
+    head.pblock = -1 ;
+    head.lblock = -1 ;
+    head.rblock = -1 ;
+    head.numEntries = 0 ;
+    head.numAttrs = 0 ;
+    head.numSlots = 0;
+    BlockBuffer::setHeader(&head);
+
+    BlockBuffer::setBlockType(blockType);  
+
+    return freeBlock ;
+}
+
+int BlockBuffer::getBlockNum() {
+    return this->blockNum ;
 }
