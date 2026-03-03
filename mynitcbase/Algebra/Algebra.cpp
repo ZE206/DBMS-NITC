@@ -85,7 +85,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
 }
 
 int Algebra::insert(char relName[ATTR_SIZE], int nAttrs, char record[][ATTR_SIZE]) {
-    if(strcmp(relName,"RELATIONCAT") == 0 || strcmp(relName,"ATTRCAT") == 0) {
+    if(strcmp(relName,"RELATIONCAT") == 0 || strcmp(relName,"ATTRIBUTECAT") == 0) {
         return E_NOTPERMITTED ;
     }
 
@@ -106,7 +106,6 @@ int Algebra::insert(char relName[ATTR_SIZE], int nAttrs, char record[][ATTR_SIZE
 
     for( int i = 0; i < nAttrs ; i++) {
         AttrCatEntry attrCatEntry ;
-
         AttrCacheTable::getAttrCatEntry(relId,i,&attrCatEntry);
 
         int type = attrCatEntry.attrType ;
@@ -118,7 +117,8 @@ int Algebra::insert(char relName[ATTR_SIZE], int nAttrs, char record[][ATTR_SIZE
                 return E_ATTRTYPEMISMATCH;
             }
         } else if(type == STRING) {
-            strcpy(recordValues[i].sVal,record[i]);
+            strncpy(recordValues[i].sVal,record[i],ATTR_SIZE);
+            recordValues[i].sVal[ATTR_SIZE - 1] = '\0';
         }
     }
     return BlockAccess::insert(relId,recordValues);
