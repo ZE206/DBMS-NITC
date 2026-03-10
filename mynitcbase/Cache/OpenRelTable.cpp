@@ -240,11 +240,25 @@ int OpenRelTable::closeRel(int relId) {
         return E_RELNOTOPEN;
     }
 
+     if(RelCacheTable::relCache[relId]->dirty) {
+        Attribute record[RELCAT_NO_ATTRS] ;
+        RelCacheTable::relCatEntryToRecord(&(RelCacheTable::relCache[relId]->relCatEntry),record);
+
+        Attribute attrVal ;
+        strcpy(attrVal.sVal,record[RELCAT_REL_NAME_INDEX].sVal);
+        RelCacheTable::resetSearchIndex(RELCAT_RELID);
+        RecId recId = BlockAccess::linearSearch(RELCAT_RELID,(char*)RELCAT_ATTR_RELNAME, attrVal, EQ);
+        RecBuffer relCatBlock(recId.block);
+
+        relCatBlock.setRecord(record,recId.slot);
+    }
+
     if(RelCacheTable::relCache[relId]) {
         free(RelCacheTable::relCache[relId]);
         RelCacheTable::relCache[relId] = nullptr ;
     }
 
+    
     if (AttrCacheTable::attrCache[relId]) {
         freeLinkedList(&AttrCacheTable::attrCache[relId]);
         AttrCacheTable::attrCache[relId] = nullptr; 
