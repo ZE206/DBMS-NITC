@@ -53,14 +53,14 @@ int Algebra::select(char srcRel[ATTR_SIZE],
         strcpy(attrVal.sVal, strVal);
     }
 
-    //  reset search
+    // ✅ reset search
     RelCacheTable::resetSearchIndex(srcRelId);
 
-    //  FETCH relCatEntry ONCE (THIS FIXES YOUR ERROR)
+    // ✅ FETCH relCatEntry ONCE (THIS FIXES YOUR ERROR)
     RelCatEntry relCatEntry;
     RelCacheTable::getRelCatEntry(srcRelId, &relCatEntry);
 
-    // print header
+    // ✅ print header
     printf("|");
     for (int i = 0; i < relCatEntry.numAttrs; i++) {
         AttrCatEntry col;
@@ -70,7 +70,7 @@ int Algebra::select(char srcRel[ATTR_SIZE],
     printf("\n");
  //////////////
    
-    //  print tuples
+    // ✅ print tuples
     while (true) {
 
         RecId searchRes =
