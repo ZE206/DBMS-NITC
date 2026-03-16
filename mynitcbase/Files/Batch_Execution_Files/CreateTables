@@ -1,0 +1,6 @@
+CREATE TABLE Students(RollNumber STR, Name STR, Marks NUM, Class STR)
+CREATE TABLE Events(id NUM, title STR, location STR)
+CREATE TABLE Locations(name STR, capacity NUM)
+CREATE TABLE Participants(regNo NUM, event STR)
+
+

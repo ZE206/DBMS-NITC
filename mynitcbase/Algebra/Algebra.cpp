@@ -12,98 +12,150 @@
 #include <cstdlib>
 #include <cerrno>
 
+bool isNumber(char *str)
+{
+    int len;
+    float ignore;
 
-bool isNumber(char *str) {
-    char *endptr;
-    errno = 0;
-
-    strtod(str, &endptr);
-
-    if (errno != 0)
-        return false;
-
-    while (*endptr == ' ' || *endptr == '\t')
-        endptr++;
-
-    return *endptr == '\0';
+    int ret = sscanf(str, "%f %n", &ignore, &len);
+    return ret == 1 && len == (int)strlen(str);
 }
-/*
- * SELECT operation
- */
-int Algebra::select(char srcRel[ATTR_SIZE],
-                    char targetRel[ATTR_SIZE],
-                    char attr[ATTR_SIZE],
-                    int op,
-                    char strVal[ATTR_SIZE]) {
 
+int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr[ATTR_SIZE], int op, char strVal[ATTR_SIZE])
+{
     int srcRelId = OpenRelTable::getRelId(srcRel);
     if (srcRelId == E_RELNOTOPEN)
-        return E_RELNOTOPEN;
-
-    AttrCatEntry attrCatEntry;
-    if (AttrCacheTable::getAttrCatEntry(srcRelId, attr, &attrCatEntry) != SUCCESS)
-        return E_ATTRNOTEXIST;
-
-    Attribute attrVal;
-    if (attrCatEntry.attrType == NUMBER) {
-        if (!isNumber(strVal))
-            return E_ATTRTYPEMISMATCH;
-        attrVal.nVal = atof(strVal);
-    } else {
-        strcpy(attrVal.sVal, strVal);
+    {
+        return srcRelId;
     }
 
-    //  reset search
+    AttrCatEntry attrCatEntry;
+    int ret = AttrCacheTable::getAttrCatEntry(srcRelId, attr, &attrCatEntry);
+    if (ret != SUCCESS)
+    {
+        return ret;
+    }
+
+    int type = attrCatEntry.attrType;
+    Attribute attrVal;
+
+    if (type == NUMBER)
+    {
+        if (isNumber(strVal))
+        {
+            attrVal.nVal = atof(strVal);
+        }
+        else
+        {
+            return E_ATTRTYPEMISMATCH;
+        }
+    }
+    else if (type == STRING)
+    {
+        strcpy(attrVal.sVal, strVal);
+    }
     RelCacheTable::resetSearchIndex(srcRelId);
 
-    //  FETCH relCatEntry ONCE (THIS FIXES YOUR ERROR)
     RelCatEntry relCatEntry;
     RelCacheTable::getRelCatEntry(srcRelId, &relCatEntry);
 
-    // print header
     printf("|");
-    for (int i = 0; i < relCatEntry.numAttrs; i++) {
-        AttrCatEntry col;
-        AttrCacheTable::getAttrCatEntry(srcRelId, i, &col);
-        printf(" %s |", col.attrName);
+    for (int i = 0; i < relCatEntry.numAttrs; ++i)
+    {
+        AttrCatEntry attrCatEntry;
+        // get attrCatEntry at offset i using AttrCacheTable::getAttrCatEntry()
+        AttrCacheTable::getAttrCatEntry(srcRelId, i, &attrCatEntry);
+
+        printf(" %s |", attrCatEntry.attrName);
     }
     printf("\n");
- //////////////
-   
-    //  print tuples
-    while (true) {
 
-        RecId searchRes =
-            BlockAccess::linearSearch(srcRelId, attr, attrVal, op);
+    int numAttrs = relCatEntry.numAttrs;
+    HeadInfo head;
 
-        if (searchRes.block == -1 && searchRes.slot == -1)
-            break;
+    while (true)
+    {
+        RecId searchRes = BlockAccess::linearSearch(srcRelId, attr, attrVal, op);
 
-        RecBuffer recBuf(searchRes.block);
+        if (searchRes.block != -1 && searchRes.slot != -1)
+        {
 
-        Attribute record[relCatEntry.numAttrs];
-        recBuf.getRecord(record, searchRes.slot);
+            Attribute record[numAttrs];
+            RecBuffer buff(searchRes.block);
+            buff.getRecord(record, searchRes.slot);
 
-        printf("|");
-        for (int i = 0; i < relCatEntry.numAttrs; i++) {
-            AttrCatEntry col;
-            AttrCacheTable::getAttrCatEntry(srcRelId, i, &col);
+            printf("|");
+            for (int i = 0; i < numAttrs; i++)
+            {
+                AttrCatEntry fieldAttrEntry;
+                AttrCacheTable::getAttrCatEntry(srcRelId, i, &fieldAttrEntry);
 
-            if (col.attrType == NUMBER)
-                printf(" %g |", record[i].nVal);
-            else
-                printf(" %s |", record[i].sVal);
+                if (fieldAttrEntry.attrType == NUMBER)
+                {
+                    printf(" %f |", record[i].nVal);
+                }
+                else
+                {
+                    printf(" %s |", record[i].sVal);
+                }
+            }
+            printf("\n");
         }
-        printf("\n");
+        else
+        {
+            break;
+        }
     }
-
     return SUCCESS;
 }
 
+int Algebra::insert(char relName[ATTR_SIZE], int nAttrs, char record[][ATTR_SIZE])
+{
+    if (strcmp(relName, "RELATIONCAT") == 0 || strcmp(relName, "ATTRIBUTECAT") == 0)
+    {
+        return E_NOTPERMITTED;
+    }
 
+    int relId = OpenRelTable::getRelId(relName);
 
+    if (relId == E_RELNOTOPEN)
+    {
+        return E_RELNOTOPEN;
+    }
 
+    RelCatEntry relCatEntry;
+    RelCacheTable::getRelCatEntry(relId, &relCatEntry);
 
+    if (relCatEntry.numAttrs != nAttrs)
+    {
+        return E_NATTRMISMATCH;
+    }
 
+    Attribute recordValues[nAttrs];
 
+    for (int i = 0; i < nAttrs; i++)
+    {
+        AttrCatEntry attrCatEntry;
+        AttrCacheTable::getAttrCatEntry(relId, i, &attrCatEntry);
 
+        int type = attrCatEntry.attrType;
+
+        if (type == NUMBER)
+        {
+            if (isNumber(record[i]))
+            {
+                recordValues[i].nVal = atof(record[i]);
+            }
+            else
+            {
+                return E_ATTRTYPEMISMATCH;
+            }
+        }
+        else if (type == STRING)
+        {
+            strncpy(recordValues[i].sVal, record[i], ATTR_SIZE);
+            recordValues[i].sVal[ATTR_SIZE - 1] = '\0';
+        }
+    }
+    return BlockAccess::insert(relId, recordValues);
+}
