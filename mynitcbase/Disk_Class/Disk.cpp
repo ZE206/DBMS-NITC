@@ -65,6 +65,7 @@ int Disk::writeBlock(unsigned char *block, int blockNum) {
   if (blockNum < 0 || blockNum > DISK_BLOCKS - 1) {
     return E_OUTOFBOUND;
   }
+  
   const int offset = blockNum * BLOCK_SIZE;
   fseek(disk, offset, SEEK_SET);
   fwrite(block, BLOCK_SIZE, 1, disk);
